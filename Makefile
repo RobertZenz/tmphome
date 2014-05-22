@@ -12,6 +12,13 @@ $(MAIN): src/$(MAIN).c
 format:
 	astyle --fill-empty-lines --indent=tab --indent-switches --suffix=no src/$(MAIN).c
 
+install:
+	cp $(MAIN) /bin/$(MAIN)
+	chmod 755 /bin/$(MAIN)
+
+uninstall:
+	rm /bin/$(MAIN)
+
 clean:
 	$(RM) $(MAIN)
 

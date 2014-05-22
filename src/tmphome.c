@@ -6,8 +6,7 @@
  */
 
 #define HOME_TEMPLATE "/tmp/guest-home-XXXXXX"
-#define SHELL "/bin/sh"
-#define SHELL_ARGS NULL
+#define SHELL "/bin/bash"
 
 
 #define _BSD_SOURCE 1
@@ -21,23 +20,24 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 
-void run(char *commandToRun, int argsCount, ...) {
-	char *command = strdup(commandToRun);
-	
-	va_list args;
-	va_start(args, argsCount);
-	for (int idx = 0; idx < argsCount; idx++) {
-		command = strcat(command, " \"");
-		command = strcat(command, va_arg(args, char *));
-		command = strcat(command, "\"");
-	}
-	va_end(args);
-	
-	printf("%s\n", command);
-	system(command);
-}
+
+void do_login_shell();
+void do_shell();
+void run(char *command_to_run, int args_count, ...);
+
 
 int main(int argc, char **argv) {
+	if (argv[0][0] == '-') {
+		do_login_shell(argv);
+	} else {
+		do_shell(argv);
+	}
+	
+	return 0;
+}
+
+
+void do_login_shell(char **argv) {
 	// Create a temporary home.
 	char *template = strdup(HOME_TEMPLATE);
 	char *home = mkdtemp(template);
@@ -47,8 +47,7 @@ int main(int argc, char **argv) {
 	if (shellPid == 0) {
 		setenv("HOME", home, 1);
 		
-		char *execArgs[] = {SHELL_ARGS};
-		execv(SHELL, execArgs);
+		execv(SHELL, argv);
 	} else {
 		waitpid(shellPid, NULL, 0);
 		
@@ -57,6 +56,24 @@ int main(int argc, char **argv) {
 		// to remove a non-empty directory except running rm.
 		run("rm", 2, "-rf", home);
 	}
+}
+
+void do_shell(char **argv) {
+	execv(SHELL, argv);
+}
+
+void run(char *command_to_run, int args_count, ...) {
+	char *command = strdup(command_to_run);
 	
-	return 0;
+	va_list args;
+	va_start(args, args_count);
+	for (int idx = 0; idx < args_count; idx++) {
+		command = strcat(command, " \"");
+		command = strcat(command, va_arg(args, char *));
+		command = strcat(command, "\"");
+	}
+	va_end(args);
+	
+	printf("%s\n", command);
+	system(command);
 }
