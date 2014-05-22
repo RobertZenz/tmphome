@@ -36,7 +36,12 @@ int main(int argc, char **argv) {
 	return 0;
 }
 
-
+/**
+ * Sets up a temporary home and runs the real shell. After the real shell
+ * has exited the temporary home gets deleted.
+ *
+ * @param argv the arguments for the real shell.
+ */
 void do_login_shell(char **argv) {
 	// Create a temporary home.
 	char *template = strdup(HOME_TEMPLATE);
@@ -58,10 +63,23 @@ void do_login_shell(char **argv) {
 	}
 }
 
+/**
+ * Runs the real shell.
+ *
+ * @param argv the arguments for the real shell.
+ */
 void do_shell(char **argv) {
 	execv(SHELL, argv);
 }
 
+/**
+ * Runs the given command with the given parameters. The parameters will be
+ * concatenated into one string and they will be quoted.
+ *
+ * @param command_to_run the command to run.
+ * @param args_count the count of the arguments that follow.
+ * @param ... the arguments itself.
+ */
 void run(char *command_to_run, int args_count, ...) {
 	char *command = strdup(command_to_run);
 	
@@ -77,3 +95,4 @@ void run(char *command_to_run, int args_count, ...) {
 	printf("%s\n", command);
 	system(command);
 }
+
